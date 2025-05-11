@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>ThreeRing</title>
+  <style>
+    
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      margin-top: 50px;
+      background: url('images/ciel.png') no-repeat center center fixed;
+      background-size: cover;
+      color: #000; /* Change la couleur du texte en noir */
+    }
+    .bar-container {
+      width: 80%;
+      height: 100px;
+      margin: 30px auto;
+      background: #333;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 0 10px #000;
+      position: relative;
+    }
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00ff99, #00ccff);
+      width: 0%;
+      transition: width 0.6s ease-in-out;
+    }
+    .goal-marker {
+      position: absolute;
+      top: -25px;
+      font-size: 12px;
+      color: #aaa;
+    }
+    .goal-marker.active {
+      color: #0f0;
+      font-weight: bold;
+    }
+    .foreground {
+      position: absolute;
+      top: 1%; /* 20% en dessous du bord haut de l'écran */
+      left: 0; /* Colle l'image au bord gauche */
+      width: 100%; /* Assure que l'image prend toute la largeur */
+      height: 100vh; /* Définit une hauteur explicite de 20% de la hauteur de l'écran */
+      background: url('images/herbe.png') no-repeat left bottom; /* Colle l'image à gauche et en bas */
+      background-size: 100% 100%; /* Étend l'image pour couvrir toute la largeur et la hauteur */
+      pointer-events: none; /* Empêche toute interaction avec cet élément */
+      z-index: 1; /* Assure que l'élément est au-dessus des autres */
+    }
+    .background-earth {
+      position: absolute;
+      top: 80%; /* Positionnée juste en dessous de l'herbe */
+      left: 0; /* Colle l'image au bord gauche */
+      width: 100%; /* Assure que l'image prend toute la largeur */
+      height: 100vh; /* Définit une hauteur explicite pour la terre */
+      background: url('images/terre.png') repeat-x left bottom; /* Répète l'image horizontalement pour couvrir toute la largeur */
+      background-size: auto 100%; /* Conserve la taille d'origine en hauteur et ajuste la largeur */
+      pointer-events: none; /* Empêche toute interaction avec cet élément */
+      z-index: 0; /* Place l'élément en dessous de l'herbe mais au-dessus du fond */
+    }
+  
+
+/* CSS */
+    .button-78 {
+      align-items: center;
+      appearance : none;
+      background-clip: padding-box;
+      background-color: initial;
+      background-image: none;
+      border-style: none;
+      box-sizing: border-box;
+      color: #fff;
+      cursor: pointer;
+      display: inline-block;
+      flex-direction: row;
+      flex-shrink: 0;
+      font-family: Eina01,sans-serif;
+      font-size: 16px;
+      font-weight: 800;
+      justify-content: center;
+      line-height: 24px;
+      margin: 0;
+      min-height: 64px;
+      outline: none;
+      overflow: visible;
+      padding: 19px 26px;
+      pointer-events: auto;
+      position: relative;
+      text-align: center;
+      text-decoration: none;
+      text-transform: none;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+      vertical-align: middle;
+      width: auto;
+      word-break: keep-all;
+      z-index: 0;
+    }
+
+    @media (min-width: 768px) {
+      .button-78 {
+        padding: 19px 32px;
+      }
+    }
+
+    .button-78:before,
+    .button-78:after {
+      border-radius: 80px;
+    }
+
+    .button-78:before {
+      background-image: linear-gradient(92.83deg, #a64bf4 0, #6a0dad 100%); /* Couleurs violettes */
+      content: "";
+      display: block;
+      height: 100%;
+      left: 0;
+      overflow: hidden;
+      position: absolute;
+      top: 0;
+      width: 100%;
+      z-index: -2;
+    }
+
+    .button-78:after {
+      background-image: linear-gradient(#4b0082 0, #2e0854 100%); /* Couleurs violettes plus sombres */
+      bottom: 4px;
+      content: "";
+      display: block;
+      left: 4px;
+      overflow: hidden;
+      position: absolute;
+      right: 4px;
+      top: 4px;
+      transition: all 100ms ease-out;
+      z-index: -1;
+    }
+
+    .button-78:hover:not(:disabled):before {
+      background: linear-gradient(92.83deg, #b366ff 0%, #800080 100%); /* Couleurs violettes plus claires au survol */
+    }
+
+    .button-78:hover:not(:disabled):after {
+      bottom: 0;
+      left: 0;
+      right: 0;
+      top: 0;
+      transition-timing-function: ease-in;
+      opacity: 0;
+    }
+
+    .button-78:active:not(:disabled) {
+      color: #ccc;
+    }
+
+    .button-78:active:not(:disabled):before {
+      background-image: linear-gradient(0deg, rgba(0, 0, 0, .2), rgba(0, 0, 0, .2)), linear-gradient(92.83deg, #a64bf4 0, #6a0dad 100%); /* Couleurs violettes avec effet actif */
+    }
+
+    .button-78:active:not(:disabled):after {
+      background-image: linear-gradient(#4b0082 0, #2e0854 100%);
+      bottom: 4px;
+      left: 4px;
+      right: 4px;
+      top: 4px;
+    }
+
+    .button-78:disabled {
+      cursor: default;
+      opacity: .24;
+    }
+  </style>
+</head>
+<body>
+  <div style="text-align: left; margin: 0; padding: 0; position: absolute; top: 0; left: 40px;">
+    <img src="images/logo.png" alt="Logo" style="max-width: 200px; height: auto; margin: 0;">
+  </div>
+
+  <h1>Glisse ta souris sur les objectifs pour les découvrir !</h1>
+  <h2 id="count">Chargement...</h2>
+
+  <div class="bar-container" id="bar-container">
+    <div class="bar-fill" id="bar-fill"></div>
+  </div>
+  
+  <div class="foreground"></div>
+  <div class="background-earth"></div>
+  <button class="button-78" role="button" onclick="window.open('https://discord.gg/fcFgudJjwq', '_blank')">Discord</button>
+  <script>
+    const API_URL = 'https://progressbardiscord.onrender.com/member-count';
+    const barFill = document.getElementById('bar-fill');
+    const countDisplay = document.getElementById('count');
+    const barContainer = document.getElementById('bar-container');
+    const GOAL = 1000;
+    const STEP = 100;
+
+    // Crée les marqueurs de palier (100, 200, ..., 1000)
+    for (let i = STEP; i <= GOAL; i += STEP) {
+      const marker = document.createElement('div');
+      marker.classList.add('goal-marker');
+      marker.style.left = `${(i / GOAL) * 100}%`;
+      marker.textContent = i;
+      barContainer.appendChild(marker);
+    }
+
+    // Ajoute des barres blanches verticales tous les 10%
+    for (let i = 10; i < 100; i += 10) {
+      const whiteBar = document.createElement('div');
+      whiteBar.style.position = 'absolute';
+      whiteBar.style.left = `${i}%`;
+      whiteBar.style.top = '0';
+      whiteBar.style.width = '2px';
+      whiteBar.style.height = '100%';
+      whiteBar.style.backgroundColor = '#fff';
+      barContainer.appendChild(whiteBar);
+    }
+
+    // Ajoute des bulles blanches transparentes au-dessus et en dessous des traits
+    for (let i = 6, step = 100; i < 101; i += 10, step += 100) {
+      const bubble = document.createElement('div');
+      bubble.style.position = 'absolute';
+      bubble.style.left = `calc(${i}% - 30px)`; // Centrer horizontalement par rapport à la barre
+      bubble.style.width = '40px';
+      bubble.style.height = '40px';
+      bubble.style.borderRadius = '50%';
+      bubble.style.backgroundColor = '#fff'; // Change les bulles en cercles blancs opaques
+      bubble.style.zIndex = '3'; // Assure que les bulles sont au-dessus des autres éléments
+      bubble.style.border = '1px solid rgba(255, 255, 255, 0.5)'; // Ajoute une bordure pour les rendre plus visibles
+      bubble.style.display = 'flex';
+      bubble.style.alignItems = 'center';
+      bubble.style.justifyContent = 'center';
+      bubble.style.fontSize = '12px';
+      bubble.style.fontWeight = 'bold';
+      bubble.style.color = '#000'; // Texte noir pour contraste
+
+      bubble.textContent = step; // Ajoute le numéro correspondant à la bulle
+
+      bubble.style.top = 'calc(40% - 15px)'; // Centré verticalement par rapport à la barre
+
+      // Update hover functionality to include an image below the reward text
+      bubble.addEventListener('mouseover', () => {
+        let rewardText = '';
+        let imageName = '';
+        switch (step) {
+          case 100:
+            rewardText = currentLanguage === 'fr' ? "🎟️ Tous les joueurs reçoivent <b>1 coffre de bienvenue</b>" : "🎟️ All players receive <b>1 welcome chest</b>";
+            imageName = 'bienvenue.png';
+            break;
+          case 200:
+            rewardText = currentLanguage === 'fr' ? "📦 Déblocage d’un <b>nouvel objet légendaire exclusif</b> via loot" : "📦 Unlock a <b>new exclusive legendary item</b> via loot";
+            imageName = 'légendaire.png';
+            break;
+          case 300:
+            rewardText = currentLanguage === 'fr' ? "💎 <b>+25% de taux de loot rare</b> pendant 24h" : "💎 <b>+25% rare loot rate</b> for 24h";
+            imageName = '25.png';
+            break;
+          case 400:
+            rewardText = currentLanguage === 'fr' ? "⚔️ Apparition d’un <b>boss événement unique</b> (à durée limitée)" : "⚔️ Appearance of a <b>unique event boss</b> (limited time)";
+            imageName = 'bossmystere.png';
+            break;
+          case 500:
+            rewardText = currentLanguage === 'fr' ? "🗺️ Ajout d’un <b>nouveau biome</b> / décor dans les combats" : "🗺️ Addition of a <b>new biome</b> / scenery in battles";
+            imageName = 'biomemystere.png';
+            break;
+          case 600:
+            rewardText = currentLanguage === 'fr' ? "🐾 Tous les joueurs obtiennent un <b>familier avec effet passif</b>" : "🐾 All players receive a <b>pet with passive effect</b>";
+            imageName = 'familiermystere.png';
+            break;
+          case 700:
+            rewardText = currentLanguage === 'fr' ? "🎁 Distribution de <b>3 coffres bonus</b> aux joueurs connectés" : "🎁 Distribution of <b>3 bonus chests</b> to connected players";
+            imageName = 'coffre.png';
+            break;
+          case 800:
+            rewardText = currentLanguage === 'fr' ? "🌀 Accès à un <b>mode infini</b> ou <b>arène spéciale</b>" : "🌀 Access to an <b>infinite mode</b> or <b>special arena</b>";
+            imageName = 'infini.png';
+            break;
+          case 900:
+            rewardText = currentLanguage === 'fr' ? "🗡️ Déblocage d’une <b>arme mythique</b> pour tous les joueurs" : "🗡️ Unlock a <b>mythical weapon</b> for all players";
+            imageName = 'armemythique.png';
+            break;
+          case 1000:
+            rewardText = currentLanguage === 'fr' ? "💰 <b>100 coffres (lootboxes)</b> offerts à tous les joueurs 🎉" : "💰 <b>100 chests (lootboxes)</b> offered to all players 🎉";
+            imageName = 'coffre.png';
+            break;
+        }
+
+        infoBox.innerHTML = `<span style='font-size: 48px; font-weight: bold;'>${currentLanguage === 'fr' ? 'Objectif' : 'Goal'} : ${step} membres</span><br><br><span style='font-size: 36px;'>${rewardText}</span><br><br><img src='images/${imageName}' alt='Reward Image' style='max-width: 100%; height: 250px;'>`;
+        infoBox.style.display = 'block';
+      });
+
+      barContainer.appendChild(bubble); // Ajoute les bulles à la barre pour qu'elles soient positionnées correctement
+    }
+
+    // Crée un rectangle blanc semi-transparent avec des coins arrondis au bas de l'écran
+    const infoBox = document.createElement('div');
+    infoBox.style.position = 'absolute'; // Change from 'fixed' to 'absolute' to position relative to the page
+    infoBox.style.bottom = '-520px'; // Keep it at the bottom of the page
+    infoBox.style.left = '20px';
+    infoBox.style.right = '20px';
+    infoBox.style.width = '97%';
+    infoBox.style.height = '600px';
+    infoBox.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'; // Fond noir semi-transparent
+    infoBox.style.borderRadius = '10px 10px 0 0'; // Coins arrondis en haut
+    infoBox.style.display = 'none'; // Caché par défaut
+    infoBox.style.textAlign = 'center';
+    infoBox.style.lineHeight = '50px';
+    infoBox.style.fontSize = '16px';
+    infoBox.style.fontWeight = 'bold';
+    infoBox.style.color = '#fff'; // Change text color to white for better visibility
+    document.body.appendChild(infoBox);
+
+    // Ajoute un triangle rouge inversé au-dessus du remplissage de la barre
+    const triangle = document.createElement('div');
+    triangle.style.position = 'absolute';
+    triangle.style.width = '0';
+    triangle.style.height = '0';
+    triangle.style.borderLeft = '10px solid transparent';
+    triangle.style.borderRight = '10px solid transparent';
+    triangle.style.borderTop = '20px solid red'; // Inversé pour pointer vers le bas
+    triangle.style.top = '-25px'; // Positionné juste au-dessus du remplissage
+    triangle.style.left = '0'; // Initialement aligné à gauche
+    triangle.style.transition = 'left 0.1s linear'; // Transition rapide pour suivre en temps réel
+    barContainer.appendChild(triangle); // Ajoute le triangle au conteneur de la barre
+
+    // Ajoute une image d'arbre juste au-dessus de l'herbe
+    const tree = document.createElement('div');
+    tree.style.position = 'absolute';
+    tree.style.bottom = '17%'; // Positionné juste au-dessus de l'herbe
+    tree.style.left = '10%'; // Position horizontale arbitraire
+    tree.style.width = '600px';
+    tree.style.height = '900px';
+    tree.style.background = "url('images/arbre.png') no-repeat center center";
+    tree.style.backgroundSize = 'contain';
+    tree.style.left = '-180px';
+    tree.style.zIndex = '-2'; // Assure que l'arbre est au-dessus de l'herbe
+    document.body.appendChild(tree);
+
+    // Ajoute une image de coffre à droite juste au-dessus de l'herbe
+    const chest = document.createElement('div');
+    chest.style.position = 'absolute';
+    chest.style.bottom = '6%'; // Positionné juste au-dessus de l'herbe
+    chest.style.right = '10%'; // Position horizontale à droite
+    chest.style.width = '300px';
+    chest.style.height = '450px';
+    chest.style.background = "url('images/coffre.png') no-repeat center center";
+    chest.style.backgroundSize = 'contain';
+    chest.style.zIndex = '-2'; // Assure que le coffre est au-dessus de l'herbe
+    document.body.appendChild(chest);
+
+    // Ajoute un style pour le h1 avec un fond blanc semi-transparent et des bords arrondis
+    const h1Element = document.querySelector('h1');
+    h1Element.style.position = 'relative';
+    h1Element.style.backgroundColor = 'rgba(255, 255, 255, 0.8)'; // Fond blanc semi-transparent
+    h1Element.style.borderRadius = '10px'; // Bords arrondis
+    h1Element.style.padding = '10px 20px'; // Ajoute un peu de padding autour du texte
+    h1Element.style.display = 'inline-block'; // Ajuste la largeur au contenu
+
+    // Add a language toggle button with a French and English flag
+    const languageButton = document.createElement('button');
+    languageButton.style.position = 'absolute';
+    languageButton.style.top = '20px';
+    languageButton.style.right = '20px';
+    languageButton.style.width = '50px';
+    languageButton.style.height = '50px';
+    languageButton.style.border = 'none';
+    languageButton.style.borderRadius = '50%';
+    languageButton.style.backgroundImage = 'none'; // Remove background image
+    languageButton.style.fontSize = '24px'; // Adjust font size for emoji
+    languageButton.textContent = '🇬🇧'; // Default to French flag emoji
+    languageButton.style.cursor = 'pointer';
+    languageButton.title = 'Change language';
+
+    document.body.appendChild(languageButton);
+
+    // Language toggle functionality
+    let currentLanguage = 'fr';
+    languageButton.addEventListener('click', () => {
+      if (currentLanguage === 'fr') {
+        currentLanguage = 'en';
+        languageButton.textContent = '🇫🇷';
+        document.querySelector('h1').textContent = 'Hover over the goals to discover them!';
+        document.querySelector('h2').textContent = 'Loading...';
+        infoBox.textContent = 'Goal: Hover over a bubble to see details';
+      } else {
+        currentLanguage = 'fr';
+        languageButton.textContent = '🇬🇧';
+        document.querySelector('h1').textContent = 'Glisse ta souris sur les objectifs pour les découvrir !';
+        document.querySelector('h2').textContent = 'Chargement...';
+        infoBox.textContent = 'Objectif : Survolez une bulle pour voir les détails';
+      }
+    });
+
+    function updateBar(count) {
+      const percent = Math.min((count / GOAL) * 100, 100);
+      barFill.style.width = `${percent}%`;
+      triangle.style.left = `calc(${percent}% - 10px)`; // Déplace le triangle avec le remplissage
+      countDisplay.textContent = `${count} membres`;
+
+      // Activer les marqueurs atteints
+      document.querySelectorAll('.goal-marker').forEach(marker => {
+        const value = parseInt(marker.textContent);
+        if (count >= value) {
+          marker.classList.add('active');
+        } else {
+          marker.classList.remove('active');
+        }
+      });
+    }
+
+    function displayNextMilestoneReward(count) {
+      let nextMilestone = STEP;
+      let rewardText = '';
+      let imageName = '';
+
+      // Find the next milestone
+      for (let i = STEP; i <= GOAL; i += STEP) {
+        if (count < i) {
+          nextMilestone = i;
+          break;
+        }
+      }
+
+      // Set reward text and image based on the next milestone
+      switch (nextMilestone) {
+        case 100:
+          rewardText = currentLanguage === 'fr' ? "🎟️ Tous les joueurs reçoivent <b>1 coffre de bienvenue</b>" : "🎟️ All players receive <b>1 welcome chest</b>";
+          imageName = 'bienvenue.png';
+          break;
+        case 200:
+          rewardText = currentLanguage === 'fr' ? "📦 Déblocage d’un <b>nouvel objet légendaire exclusif</b> via loot" : "📦 Unlock a <b>new exclusive legendary item</b> via loot";
+          imageName = 'légendaire.png';
+          break;
+        case 300:
+          rewardText = currentLanguage === 'fr' ? "💎 <b>+25% de taux de loot rare</b> pendant 24h" : "💎 <b>+25% rare loot rate</b> for 24h";
+          imageName = '25.png';
+          break;
+        case 400:
+          rewardText = currentLanguage === 'fr' ? "⚔️ Apparition d’un <b>boss événement unique</b> (à durée limitée)" : "⚔️ Appearance of a <b>unique event boss</b> (limited time)";
+          imageName = 'bossmystere.png';
+          break;
+        case 500:
+          rewardText = currentLanguage === 'fr' ? "🗺️ Ajout d’un <b>nouveau biome</b> / décor dans les combats" : "🗺️ Addition of a <b>new biome</b> / scenery in battles";
+          imageName = 'biomemystere.png';
+          break;
+        case 600:
+          rewardText = currentLanguage === 'fr' ? "🐾 Tous les joueurs obtiennent un <b>familier avec effet passif</b>" : "🐾 All players receive a <b>pet with passive effect</b>";
+          imageName = 'familiermystere.png';
+          break;
+        case 700:
+          rewardText = currentLanguage === 'fr' ? "🎁 Distribution de <b>3 coffres bonus</b> aux joueurs connectés" : "🎁 Distribution of <b>3 bonus chests</b> to connected players";
+          imageName = 'coffre.png';
+          break;
+        case 800:
+          rewardText = currentLanguage === 'fr' ? "🌀 Accès à un <b>mode infini</b> ou <b>arène spéciale</b>" : "🌀 Access to an <b>infinite mode</b> or <b>special arena</b>";
+          imageName = 'infini.png';
+          break;
+        case 900:
+          rewardText = currentLanguage === 'fr' ? "🗡️ Déblocage d’une <b>arme mythique</b> pour tous les joueurs" : "🗡️ Unlock a <b>mythical weapon</b> for all players";
+          imageName = 'armemythique.png';
+          break;
+        case 1000:
+          rewardText = currentLanguage === 'fr' ? "💰 <b>100 coffres (lootboxes)</b> offerts à tous les joueurs 🎉" : "💰 <b>100 chests (lootboxes)</b> offered to all players 🎉";
+          imageName = 'coffre.png';
+          break;
+      }
+
+      // Update the infoBox with the next milestone reward
+      infoBox.innerHTML = `<span style='font-size: 48px; font-weight: bold;'>${currentLanguage === 'fr' ? 'Objectif' : 'Goal'} : ${nextMilestone} membres</span><br><br><span style='font-size: 36px;'>${rewardText}</span><br><br><img src='images/${imageName}' alt='Reward Image' style='max-width: 100%; height: 250px;'>`;
+      infoBox.style.display = 'block';
+    }
+
+    async function fetchCount() {
+      try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+        updateBar(data.count);
+        displayNextMilestoneReward(data.count); // Display the next milestone reward by default
+      } catch (e) {
+        countDisplay.textContent = "Erreur de chargement";
+        console.error(e);
+      }
+    }
+
+    fetchCount();
+    setInterval(fetchCount, 10000); // actualise toutes les 10 secondes
+  </script>
+</body>
+</html>
+
